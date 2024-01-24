@@ -1,0 +1,5 @@
+venv
+env.py
+.env
+gpt.key
+__pycache__
