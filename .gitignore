@@ -3,3 +3,4 @@ env.py
 .env
 gpt.key
 __pycache__
+pyrightconfig.json

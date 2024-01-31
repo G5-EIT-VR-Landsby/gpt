@@ -1,10 +1,7 @@
-from enum import auto
-from httpx import stream
-from openai import OpenAI
-from openai.resources.beta.threads.messages import messages
-from env import Env
-from pathlib import Path
 import os
+from pathlib import Path
+from openai import OpenAI
+from env import Env
 
 speech_file_path = Path(__file__).parent / "speech.mp3"
 
@@ -13,7 +10,6 @@ client = OpenAI(
     api_key=Env.api_key
 
 )
-
 
 stream = client.chat.completions.create(
   model="gpt-3.5-turbo",
@@ -25,9 +21,16 @@ stream = client.chat.completions.create(
     stream=True
 )
 
+not_allowd_speach = [",", ".", " ", "\n", ", ", ". ", "  ", "\n "]
 # Print out response while straming from OpenAI
+i = 0
 for chunk in stream:
     if chunk.choices[0].delta.content is not None:
-        print(chunk.choices[0].delta.content, end="")
+ 
+        word = chunk.choices[0].delta.content
+        if word not in not_allowd_speach:
+            print(i,len(word), word)
+            i += 1
+            # Speech.speak(word)
 
 
