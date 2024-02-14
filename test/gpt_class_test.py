@@ -1,4 +1,3 @@
-from queue import Queue
 from openai import OpenAI
 from env import Env
 # import boto3
@@ -6,23 +5,22 @@ from env import Env
 # from pydub.playback import play
 # import io
 # import pyaudio
-from threading import Lock
+# from threading import Lock
+from queue import Queue
 
 class GPT:
-
-    def __init__(self, organization, api_key) -> None:
+    def __init__(self) -> None:
         self.client = OpenAI(
-            organization=organization,
-            api_key=api_key)
+            organization=Env.organization,
+            api_key=Env.api_key)
 
-        self.stream_queue = Queue()
-
+        self.stream_list_queue = []
+        self.sentence_queue = Queue()
         
     def get_queue(self):
-        return self.stream_queue.get()
-        
-
-    def prompt(self, role_prompt, text_prompt): 
+        return self.sentence_queue.get()
+    
+    def get_prompt(self, role_prompt, text_prompt): 
         stream = self.client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -36,13 +34,11 @@ class GPT:
         return stream
 
     # need a stream object from get_prompt
-    def stream(self, role_prompt, text_prompt):
-
-        stream = self.prompt(role_prompt, text_prompt)
+    def stream(self, stream):
         
         temp_msg_list = []
-        stream_list_queue = []
-        queue_index = 0
+        self.stream_list_queue = []
+        response_index = 0
 
         # Print out response while streaming from OpenAI
         for chunk in stream:
@@ -52,26 +48,28 @@ class GPT:
                     
             # When we have collected a sentence from the stream, save it to response_msg.
             if len(temp_msg_list) > 0 and "." in temp_msg_list[-1]:
-                stream_list_queue.append("".join(temp_msg_list))
+                self.stream_list_queue.append("".join(temp_msg_list))
 
                 temp_msg_list.clear()
 
-                # print(queue_index, stream_list_queue[queue_index])
+                # print(response_index, response_msg[response_index])
 
-                # Add sentence to queue
-                self.stream_queue.put(stream_list_queue[queue_index])
+                # if len(response_msg) > 0:
+                #     response_msg.pop(0)
 
-                queue_index += 1
+                response_index += 1
 
-        print(f"[GPT]: gpt request finished, sentences: {len(stream_list_queue)}")
+        print(f"[GPT]: gpt request finished, sentences: {len(self.stream_list_queue)}")
 
-        # return stream_list_queue
+        return self.stream_list_queue
     
     
 
 if __name__ == "__main__":
     gpt = GPT()
 
-    stream = gpt.stream("du er en historie lærer", "Hvem vant 2 verdenskrig?")
+    stream = gpt.get_prompt("du er en historie lærer", "Hvem vant 2 verdenskrig?")
+    msg_list = gpt.stream(stream)
+    print(gpt.stream_list_queue)
 
 

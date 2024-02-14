@@ -1,109 +1,55 @@
-from openai import OpenAI
-from openai.resources.audio import audio, speech
+from gpt import GPT
+from tts import TTS
+from stt_sim import STT
+import threading
+# import time
 from env import Env
-from pathlib import Path
-from threading import Thread, Lock
-import boto3
-from pydub import AudioSegment
-from pydub.playback import play
-import io
-from pydub.playback import play
-import pyaudio
-
-queue_lock = Lock()
-speech_lock = Lock()
-# start by acquire to get text before audio
-speech_lock.acquire()
-
-speech_file_path = Path(__file__).parent / "speech.mp3"
-
-aws_access_key_id = 'AKIA6GBMHZV5KLEXLHXV'
-aws_secret_access_key = '4ypAIaMN0mBCqZKgRSp4AeY6g4VllLhPUFIJCJyt'
-region_name = 'eu-central-1'  # e.g., 'us-east-1'
-
-client = OpenAI(
-    organization=Env.organization,
-    api_key=Env.api_key
-
-)
-test_prompt = "Lag et kort dikt som handler om hvordan andre verdenskrig ustplillte seg."
 
 
-response_msg = []
-def get_text(text_prompt):
+gpt = GPT(Env.organization, Env.api_key)
+tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
 
-    stream = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[
-        {"role": "system", "content": "Du er en hisorielærer som underviser om andre verdenskrig. "},
-        {"role": "user", "content": text_prompt}
-    ],
-        max_tokens=50,
-        stream=True
-    )
+# TODO:
+stt = STT()
+
+def sst_target():
+    while True:
+        stt.get_text()
+
+def gpt_target():
+    while True:
+        query_prompt = stt.get_queue()
+        gpt.stream("du er en historielærer", query_prompt)
+
+
+def tts_target():
+    filname_index = 0
+
+    while True:
+        sentence_to_text = gpt.get_queue()
+        audio_stream = tts.text_to_speach(sentence_to_text)
+        filename = "audio_files/audio" + str(filname_index) + ".mp3"
+
+        # play audio
+        tts.play_audio(audio_stream=audio_stream)
+
+        audio_stream.export(filename)
+        filname_index += 1
+
+if __name__ == "__main__":
+
+    thread_functions = [sst_target, gpt_target, tts_target]
+
+
+    threads = []
+    for func in thread_functions:
+        thread = threading.Thread(target=func)
+        threads.append(thread)
+        thread.start()
+    # join
+    for th in threads:
+        th.join()
+
+        
     
-    temp_msg_list = []
-
-    # Print out response while straming from OpenAI
-    for chunk in stream:
-        word = chunk.choices[0].delta.content
-        if word is not None:
-            temp_msg_list.append(word)
-        
-        # Divide text into chunks
-        if len(temp_msg_list) > 5:
-            response_msg.append("".join(temp_msg_list))
-
-            temp_msg_list.clear()
-
-            # print(response_msg)
-            # speech_lock.release()
-
-    print(response_msg)
-
-
-def stream_audio_from_polly(voice_id='Ida', region_name='eu-central-1'):
-    # Initialize Polly client
-    polly_client = boto3.client('polly', region_name=region_name, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
-
-    # Configure audio format and parameters
-    output_format = 'mp3'
-    sample_rate = 16000
-
-    # Split the text into smaller chunks (adjust as needed)
-    # chunk_size = 30
-    # text_chunks = [text_to_speak[i:i + chunk_size] for i in range(0, len(text_to_speak), chunk_size)]
-
-
-    # Initialize PyAudio
-    # p = pyaudio.PyAudio()
-
-    # Iterate over text chunks and stream audio
-    speech_lock.acquire()
-
-    # Initialize PyAudio
-    p = pyaudio.PyAudio()
-
-    while len(response_msg) > 0:    
-        response = polly_client.synthesize_speech(Text=response_msg[0], VoiceId=voice_id, OutputFormat=output_format,
-                                                  SampleRate=str(sample_rate), Engine='neural')
-
-        
-        # Load the audio stream with pydub
-        audio_stream = AudioSegment.from_mp3(io.BytesIO(response['AudioStream'].read()))
-
-        play(audio_stream)
-
-        response_msg.remove(0)
-
-    p.terminate()
-
-if __name__ == '__main__':
-    gpt_thread = Thread(target = get_text, args=(test_prompt, ))
-    # speech_thread = Thread(target=stream_audio_from_polly)
-
-    gpt_thread.start()
-    # speech_thread.start()
-    # speech_thread.join()
-    gpt_thread.join()
 
