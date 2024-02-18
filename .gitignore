@@ -4,3 +4,4 @@ env.py
 gpt.key
 __pycache__
 pyrightconfig.json
+audio_files/*
