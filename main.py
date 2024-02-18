@@ -6,7 +6,7 @@ import threading
 from env import Env
 
 
-gpt = GPT(Env.organization, Env.api_key)
+gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
 
 # TODO:
