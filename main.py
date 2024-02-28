@@ -1,27 +1,40 @@
 from gpt import GPT
 from tts import TTS
-from stt_sim import STT
+from stt_sim import STT_sim
 import threading
-# import time
 from env import Env
 
+from SST.whisper_live.client import TranscriptionClient
 
 gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
 
-# TODO:
-stt = STT()
+stt_client = TranscriptionClient(
+        "localhost",
+        9090,
+        is_multilingual=True,
+        # lang="en",
+        translate=False,
+        model="small"
+    )
 
-def sst_target():
-    while True:
-        stt.get_text()
+# Simluate prompt generation
+# stt_sim = STT_sim()
 
+# def sst_sim_target():
+#     while True:
+#         stt_sim.get_text()
+
+# gpt thread target
 def gpt_target():
     while True:
-        query_prompt = stt.get_queue()
-        gpt.stream("du er en historielærer", query_prompt)
+        query_prompt = stt_client.client.get_prompt()
+        if query_prompt:
+            print(query_prompt)
+            prompt_context = "du er en historielærer"
+            gpt.stream(prompt_context, query_prompt)
 
-
+# tts thread target
 def tts_target():
     filname_index = 0
 
@@ -36,9 +49,14 @@ def tts_target():
         audio_stream.export(filename)
         filname_index += 1
 
+
+# sst_client thread gpt_target
+def stt_target():
+    stt_client()
+
 if __name__ == "__main__":
 
-    thread_functions = [sst_target, gpt_target, tts_target]
+    thread_functions = [stt_target, gpt_target, tts_target]
 
 
     threads = []
@@ -49,7 +67,4 @@ if __name__ == "__main__":
     # join
     for th in threads:
         th.join()
-
-        
-    
 
