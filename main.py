@@ -1,10 +1,10 @@
 from gpt import GPT
 from tts import TTS
-from stt_sim import STT_sim
+#from stt_sim import STT
 import threading
 from env import Env
 
-from SST.whisper_live.client import TranscriptionClient
+from STT.whisper_live.client import TranscriptionClient
 
 gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
