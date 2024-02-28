@@ -3,8 +3,12 @@ from tts import TTS
 from stt_sim import STT_sim
 import threading
 from env import Env
+import os
 
-from SST.whisper_live.client import TranscriptionClient
+from STT.whisper_live.client import TranscriptionClient
+
+# if debug we simulate 
+DEBUG = 1
 
 gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
@@ -19,11 +23,11 @@ stt_client = TranscriptionClient(
     )
 
 # Simluate prompt generation
-# stt_sim = STT_sim()
+stt_sim = STT_sim()
 
-# def sst_sim_target():
-#     while True:
-#         stt_sim.get_text()
+def stt_sim_target():
+    while True:
+        stt_sim.get_text()
 
 # gpt thread target
 def gpt_target():
@@ -41,18 +45,25 @@ def tts_target():
     while True:
         sentence_to_text = gpt.get_queue()
         audio_stream = tts.text_to_speach(sentence_to_text)
-        filename = "audio_files/audio" + str(filname_index) + ".mp3"
+        tmp_filename = "audio_files/tmp" + str(filname_index) + ".mp3"
+        filname_finished = "audio_files/" + str(filname_index) + "_done" + ".mp3"
 
         # play audio
         tts.play_audio(audio_stream=audio_stream)
 
-        audio_stream.export(filename)
+        audio_stream.export(tmp_filename)
+        os.rename(tmp_filename, filname_finished)
+        
         filname_index += 1
 
 
 # sst_client thread gpt_target
 def stt_target():
-    stt_client()
+    if DEBUG:
+        stt_sim_target()
+    else:
+        stt_client()
+
 
 if __name__ == "__main__":
 

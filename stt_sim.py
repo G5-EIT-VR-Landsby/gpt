@@ -2,7 +2,7 @@ from queue import Queue
 from env import Env
 
 
-class STT:
+class STT_sim:
 
     def __init__(self) -> None:
         self.queue = Queue()
