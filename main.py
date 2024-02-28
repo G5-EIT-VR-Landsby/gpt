@@ -1,38 +1,23 @@
 from gpt import GPT
 from tts import TTS
-from stt_sim import STT_sim
+from stt import STT
 import threading
 from env import Env
 import os
 
-from STT.whisper_live.client import TranscriptionClient
+# from STT.whisper_live.client import TranscriptionClient
 
 # if debug we simulate 
 DEBUG = 1
 
 gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
-
-stt_client = TranscriptionClient(
-        "localhost",
-        9090,
-        is_multilingual=True,
-        # lang="en",
-        translate=False,
-        model="small"
-    )
-
-# Simluate prompt generation
-stt_sim = STT_sim()
-
-def stt_sim_target():
-    while True:
-        stt_sim.get_text()
+stt = STT(DEBUG)
 
 # gpt thread target
 def gpt_target():
     while True:
-        query_prompt = stt_client.client.get_prompt()
+        query_prompt = stt.get_prompt()
         if query_prompt:
             print(query_prompt)
             prompt_context = "du er en historielærer"
@@ -52,6 +37,7 @@ def tts_target():
         tts.play_audio(audio_stream=audio_stream)
 
         audio_stream.export(tmp_filename)
+        # rename after exported
         os.rename(tmp_filename, filname_finished)
         
         filname_index += 1
@@ -59,10 +45,7 @@ def tts_target():
 
 # sst_client thread gpt_target
 def stt_target():
-    if DEBUG:
-        stt_sim_target()
-    else:
-        stt_client()
+    stt.start()
 
 
 if __name__ == "__main__":
