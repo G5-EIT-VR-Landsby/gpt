@@ -5,8 +5,6 @@ import threading
 from env import Env
 import os
 
-# from STT.whisper_live.client import TranscriptionClient
-
 # if debug we simulate 
 DEBUG = 0
 
@@ -39,14 +37,12 @@ def tts_target():
         audio_stream.export(tmp_filename)
         # rename after exported
         os.rename(tmp_filename, filname_finished)
-        
-        filname_index += 1
 
+        filname_index += 1
 
 # sst_client thread gpt_target
 def stt_target():
     stt.start()
-
 
 if __name__ == "__main__":
 
