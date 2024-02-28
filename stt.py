@@ -6,14 +6,7 @@ class STT:
 
     def __init__(self, debug) -> None:
         self.debug = debug
-        self.client = None
-        self.sim_queue = Queue()
-
-    def start(self):
-        if self.debug:
-            self.start_sim()
-        else:
-            self.client = TranscriptionClient(
+        self.client = TranscriptionClient(
                 "localhost",
                 9090,
                 is_multilingual=True,
@@ -21,6 +14,20 @@ class STT:
                 translate=False,
                 model="small"
             )
+        self.sim_queue = Queue()
+
+    def start(self):
+        if self.debug:
+            self.start_sim()
+        else:
+            # self.client = TranscriptionClient(
+            #     "localhost",
+            #     9090,
+            #     is_multilingual=True,
+            #     # lang="en",
+            #     translate=False,
+            #     model="small"
+            # )
             self.client()
 
 

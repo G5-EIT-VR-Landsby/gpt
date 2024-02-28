@@ -8,7 +8,7 @@ import os
 # from STT.whisper_live.client import TranscriptionClient
 
 # if debug we simulate 
-DEBUG = 1
+DEBUG = 0
 
 gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
