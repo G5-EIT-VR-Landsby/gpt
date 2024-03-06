@@ -19,7 +19,10 @@ def gpt_target():
         if query_prompt:
             print(query_prompt)
             prompt_context = "du er en historielærer"
-            gpt.stream(prompt_context, query_prompt)
+            stream_thread = threading.Thread(target=gpt.stream, args=(prompt_context, query_prompt))
+            img_thread = threading.Thread(target=gpt.image, args=(query_prompt,))
+            stream_thread.start()
+            img_thread.start()
 
 # tts thread target
 def tts_target():
