@@ -4,18 +4,23 @@ from stt import STT
 import threading
 from env import Env
 import os
+from udp_server import Server
 
-# if debug we simulate 
-DEBUG = 0
+# Config variables
+DEBUG = 1
+audio_file_dir_path = "audio_files/"
 
+# Ai model objects
 gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
 stt = STT(DEBUG)
+udp_server = Server()
 
 # gpt thread target
 def gpt_target():
+    gpt.prompt_context = "du er en historielærer"
     while True:
-        query_prompt = stt.get_prompt()
+        query_prompt = stt.get_prompt() # this will wait untiil we have a prompt in sst.Queue
         if query_prompt:
             print(query_prompt)
             prompt_context = "du er en historielærer"
@@ -23,41 +28,49 @@ def gpt_target():
             img_thread = threading.Thread(target=gpt.image, args=(query_prompt,))
             stream_thread.start()
             img_thread.start()
+            prompt_context = gpt.prompt_context
+            gpt.stream(prompt_context, query_prompt)
+
 
 # tts thread target
 def tts_target():
-    filname_index = 0
+    filname_index = 1
 
     while True:
         sentence_to_text = gpt.get_queue()
         audio_stream = tts.text_to_speach(sentence_to_text)
-        tmp_filename = "audio_files/tmp" + str(filname_index) + ".mp3"
-        filname_finished = "audio_files/" + str(filname_index) + "_done" + ".mp3"
 
-        # play audio
-        tts.play_audio(audio_stream=audio_stream)
+        # audio file name, FIXME: make function in tts?
+        tmp_filename = audio_file_dir_path + "tmp" + str(filname_index) + ".mp3"
+        filname_finished = audio_file_dir_path + str(filname_index) + "_done" + ".mp3"
 
         audio_stream.export(tmp_filename)
         # rename after exported
         os.rename(tmp_filename, filname_finished)
 
+        # play audio
+        tts.play_audio(audio_stream=audio_stream)
         filname_index += 1
 
-# sst_client thread gpt_target
+
+# stt thread target (this is stt client side)
 def stt_target():
     stt.start()
 
+#  Udp server
+def udp_server_target():
+    udp_server.start()
+
+
 if __name__ == "__main__":
-
-    thread_functions = [stt_target, gpt_target, tts_target]
-
+    thread_functions = [stt_target, gpt_target, tts_target, udp_server_target]
 
     threads = []
     for func in thread_functions:
         thread = threading.Thread(target=func)
         threads.append(thread)
         thread.start()
+
     # join
     for th in threads:
         th.join()
-
