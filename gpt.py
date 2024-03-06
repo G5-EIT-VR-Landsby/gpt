@@ -1,12 +1,6 @@
 from queue import Queue
 from openai import OpenAI
 from env import Env
-
-# import boto3
-# from pydub import AudioSegment
-# from pydub.playback import play
-# import io
-# import pyaudio
 from threading import Lock
 import base64
 
@@ -17,6 +11,8 @@ class GPT:
         self.client = OpenAI(organization=organization, api_key=api_key)
 
         self.stream_queue = Queue()
+        self.prompt_context = ""
+
 
     def get_queue(self):
         return self.stream_queue.get()
@@ -100,10 +96,7 @@ class GPT:
 
         print(f"[GPT]: gpt request finished, sentences: {len(stream_list_queue)}")
 
-        # return stream_list_queue
-
-
 if __name__ == "__main__":
-    gpt = GPT()
+    gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 
     stream = gpt.stream("du er en historie lærer", "Hvem vant 2 verdenskrig?")
