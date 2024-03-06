@@ -22,13 +22,14 @@ def gpt_target():
     while True:
         query_prompt = stt.get_prompt() # this will wait untiil we have a prompt in sst.Queue
         if query_prompt:
+            prompt_context = gpt.prompt_context
             print(query_prompt)
-            prompt_context = "du er en historielærer"
+
             stream_thread = threading.Thread(target=gpt.stream, args=(prompt_context, query_prompt))
             img_thread = threading.Thread(target=gpt.image, args=(query_prompt,))
             stream_thread.start()
             img_thread.start()
-            prompt_context = gpt.prompt_context
+
             gpt.stream(prompt_context, query_prompt)
 
 
