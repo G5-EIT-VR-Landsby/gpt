@@ -29,7 +29,7 @@ def gpt_target():
         print("[gpt]: got through stream")
         
         # Create image from context.
-        img_thread = threading.Thread(target=gpt.image, args=(query_prompt,))
+        img_thread = threading.Thread(target=gpt.generate_image, args=(query_prompt,))
         img_thread.start()
         # stream_thread.start()
  
