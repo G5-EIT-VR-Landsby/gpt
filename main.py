@@ -1,10 +1,11 @@
 from gpt import GPT
 from tts import TTS
-from stt import STT
+# from stt import STT
 import threading
 from env import Env
 import os
 from udp_server import Server
+from gpt_stt import STT
 
 # Config variables
 DEBUG = 1
@@ -13,7 +14,8 @@ audio_file_dir_path = "audio_files/"
 # Ai model objects
 gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
 tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
-stt = STT(DEBUG)
+# stt = STT(DEBUG)
+stt = STT(Env.gpt_organization, Env.gpt_api_key)
 udp_server = Server()
 
 # gpt thread target
@@ -21,16 +23,16 @@ def gpt_target():
     gpt.prompt_context = "du er en historielærer"
     while True:
         query_prompt = stt.get_prompt() # this will wait untiil we have a prompt in sst.Queue
-        if query_prompt:
-            prompt_context = gpt.prompt_context
-            print(query_prompt)
-
-            stream_thread = threading.Thread(target=gpt.stream, args=(prompt_context, query_prompt))
-            img_thread = threading.Thread(target=gpt.image, args=(query_prompt,))
-            stream_thread.start()
-            img_thread.start()
-
-            gpt.stream(prompt_context, query_prompt)
+        print("[gpt]: got prompt")
+        prompt_context = gpt.prompt_context
+        gpt.stream(prompt_context, query_prompt)
+        print("[gpt]: got through stream")
+        
+        # Create image from context.
+        img_thread = threading.Thread(target=gpt.image, args=(query_prompt,))
+        img_thread.start()
+        # stream_thread.start()
+ 
 
 
 # tts thread target
@@ -45,7 +47,7 @@ def tts_target():
         tmp_filename = audio_file_dir_path + "tmp" + str(filname_index) + ".mp3"
         filname_finished = audio_file_dir_path + str(filname_index) + "_done" + ".mp3"
 
-        audio_stream.export(tmp_filename)
+        audio_stream.export(tmp_filename, format="mp3")
         # rename after exported
         os.rename(tmp_filename, filname_finished)
 
