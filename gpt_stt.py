@@ -1,14 +1,13 @@
 from queue import Queue
-from numpy.core.multiarray import tracemalloc_domain
 from openai import OpenAI
-from pynput.keyboard import Key, Controller
 from env import Env
 
 import pyaudio
 import wave
-from pydub import AudioSegment, audio_segment
-from pynput import keyboard
-from io import BytesIO, text_encoding
+from pydub import AudioSegment
+from pynput.keyboard import Key
+# from pynput import keyboard
+from io import BytesIO
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -34,7 +33,7 @@ class STT:
         transcription = response.text
         return transcription
 
-    # This is for pynput
+    # This is for pynput (mabye get this flag otherwise? )
     def on_release(self, key):
         try:
             if key.char == "v":
@@ -82,9 +81,6 @@ class STT:
         return self.queue.get()
 
     def start(self):
-        listener = keyboard.Listener(
-        on_release=self.on_release)
-        listener.start()
 
         while True:
             if self.recording:

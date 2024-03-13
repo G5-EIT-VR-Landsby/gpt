@@ -1,11 +1,13 @@
 from gpt import GPT
 from tts import TTS
+
 # from stt import STT
 import threading
 from env import Env
 import os
 from udp_server import Server
 from gpt_stt import STT
+from pynput import keyboard
 
 # Config variables
 DEBUG = 1
@@ -18,21 +20,23 @@ tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
 stt = STT(Env.gpt_organization, Env.gpt_api_key)
 udp_server = Server()
 
+
 # gpt thread target
 def gpt_target():
     gpt.prompt_context = "du er en historielærer"
     while True:
-        query_prompt = stt.get_prompt() # this will wait untiil we have a prompt in sst.Queue
+        query_prompt = (
+            stt.get_prompt()
+        )  # this will wait untiil we have a prompt in sst.Queue
         print("[gpt]: got prompt")
         prompt_context = gpt.prompt_context
         gpt.stream(prompt_context, query_prompt)
         print("[gpt]: got through stream")
-        
+
         # Create image from context.
         img_thread = threading.Thread(target=gpt.generate_image, args=(query_prompt,))
         img_thread.start()
         # stream_thread.start()
- 
 
 
 # tts thread target
@@ -58,7 +62,10 @@ def tts_target():
 
 # stt thread target (this is stt client side)
 def stt_target():
+    listener = keyboard.Listener(on_release=stt.on_release)
+    listener.start()
     stt.start()
+
 
 #  Udp server
 def udp_server_target():
