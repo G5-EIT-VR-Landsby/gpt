@@ -1,7 +1,6 @@
 from queue import Queue
 from openai import OpenAI
 from env import Env
-from threading import Lock
 import base64
 
 IMAGE_PRE_PROMPT = """
@@ -11,15 +10,25 @@ DALL·E 2 API. Do not start the prompt with the word "generate" only the descrip
 of the picture.
 """
 IMAGE_ROLE_PROMPT = """\
-You are a realisitc image creator, you only make realsitic drawings.
+You are a realisitc image creator, you only make realsitic drawings unless explicitly\
+told otherwise.
 """
 
+#Fagområde_dict = {"1": "Du er en mattelærer", "2": "Du er en geografilærer", "3": "Du er en fysikklærer"}
+#Nivå_dict = {"1": ", på barneskolenivå.", "2": ", på ungdomsskolenivå.", "3": ", på videregåendenivå."}
+#Svarlengde_dict = {"1": "Gi korte svar på maks 50 ord", "2": "Gi medium lange svar på maks 100 ord", "3": "Gi langde svar på maks 200 ord"}
+ 
 
 class GPT:
+
     def __init__(self, organization, api_key) -> None:
         self.client = OpenAI(organization=organization, api_key=api_key)
 
         self.stream_queue = Queue()
+        self.prompt_context = ""
+
+    #  TODO: implement this when this when prompt_context api is finished. Class methode for global accesibility? (udp_server need to reach this)
+    def set_prompt_context(self):
         self.prompt_context = ""
 
     def get_queue(self):
@@ -27,7 +36,7 @@ class GPT:
 
     def get_text(self, role_prompt, text_prompt, stream=False):
         print("[gpt]: prompting.")
-        stream = self.client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": role_prompt},
@@ -37,7 +46,7 @@ class GPT:
             stream=stream,
         )
 
-        return stream
+        return response
 
     def generate_image(self, text_prompt):
         # print("IMAGE", text_prompt)
@@ -48,7 +57,7 @@ class GPT:
 
         img_prompt = gpt_image_text_response.choices[0].message.content
 
-        print("[gpt]: IMAGE PROMPT:", img_prompt)
+        print("[GPT IMAGE]: IMAGE PROMPT:", img_prompt)
 
         response = self.client.images.generate(
             model="dall-e-3",
@@ -65,7 +74,7 @@ class GPT:
         with open("images/image.png", "wb") as fh:
             fh.write(base64.b64decode(image_data))
 
-        print("[gpt]: Image has been saved.")
+        print("[gpt IMAGE]: Image has been saved.")
 
     # need a stream object from get_prompt
     def stream(self, role_prompt, text_prompt):
@@ -101,8 +110,7 @@ class GPT:
 
 if __name__ == "__main__":
     gpt = GPT(Env.gpt_organization, Env.gpt_api_key)
-
-    # stream = gpt.stream("du er en historie lærer", "Hvem vant 2 verdenskrig?")
-    # text = gpt.prompt("du er en historie lærer", "hvem vant 2 verdenskrig")
+    
+    # NOTE: in main these two functions run in seprate threads.
+    gpt.stream("du er en historie lærer", "Hvem vant 2 verdenskrig?")
     gpt.generate_image("kan du fortelle meg lit tom 2 verdenskrig?")
-    # print(text.choices[0].message.content)
