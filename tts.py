@@ -22,10 +22,10 @@ class TTS:
 
     def text_to_speach(self, text, output_format="mp3", sample_rate=16000):
 
-        response = self.polly_client.synthesize_speech(Text=text, 
-                                                       VoiceId=self.voice_id, 
+        response = self.polly_client.synthesize_speech(Text=text,
+                                                       VoiceId=self.voice_id,
                                                        OutputFormat=output_format,
-                                                       SampleRate=str(sample_rate), 
+                                                       SampleRate=str(sample_rate),
                                                        Engine='neural')
 
         # Read audio raw from io object
