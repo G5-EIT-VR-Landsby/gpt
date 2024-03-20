@@ -18,6 +18,11 @@ told otherwise.
 #Nivå_dict = {"1": ", på barneskolenivå.", "2": ", på ungdomsskolenivå.", "3": ", på videregåendenivå."}
 #Svarlengde_dict = {"1": "Gi korte svar på maks 50 ord", "2": "Gi medium lange svar på maks 100 ord", "3": "Gi langde svar på maks 200 ord"}
  
+PROMPT_CONTEXTS = {
+    "fagomraade": {"1": "Du er en mattelærer", "2": "Du er en geografilærer", "3": "Du er en fysikklærer"},
+    "nivaa": {"1": ", på barneskolenivå.", "2": ", på ungdomsskolenivå.", "3": ", på videregåendenivå."},
+    "svarlengde": {"1": "Gi korte svar på maks 50 ord", "2": "Gi medium lange svar på maks 100 ord", "3": "Gi langde svar på maks 200 ord"}
+}
 
 class GPT:
 
@@ -25,11 +30,25 @@ class GPT:
         self.client = OpenAI(organization=organization, api_key=api_key)
 
         self.stream_queue = Queue()
-        self.prompt_context = ""
+        self.prompt_context = {
+            "fagomraade": "1",
+            "nivaa": "1",
+            "svarlengde": "1"
+        }
 
     #  TODO: implement this when this when prompt_context api is finished. Class methode for global accesibility? (udp_server need to reach this)
-    def set_prompt_context(self):
-        self.prompt_context = ""
+    def set_prompt_context(self, context):
+        print(context)
+        if context is None:
+            return
+        if all(key in PROMPT_CONTEXTS for key in context):
+            self.prompt_context = context
+
+    def get_prompt_context(self):
+        fagomraade = self.prompt_context["fagomraade"]
+        nivaa = self.prompt_context["nivaa"]
+        svarlengde = self.prompt_context["svarlengde"]
+        return PROMPT_CONTEXTS["fagomraade"][fagomraade] + PROMPT_CONTEXTS["nivaa"][nivaa] + PROMPT_CONTEXTS["svarlengde"][svarlengde]
 
     def get_queue(self):
         return self.stream_queue.get()

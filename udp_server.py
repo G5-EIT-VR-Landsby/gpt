@@ -1,6 +1,7 @@
 
 from http.client import responses
 import socket
+import json
 
 
 class Server:
@@ -8,6 +9,7 @@ class Server:
     def __init__(self, host="localhost", port=12345) -> None:
         self.host = host
         self.port = port
+        self.global_context = None
 
     def start(self):
         # Create a socket object
@@ -25,11 +27,12 @@ class Server:
             while True:  # Keep the server running
                 # Receive message from client
                 data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-                print(f"[UDP server]: Received message: {data.decode()} from {addr}")
-
+                decoded_msg = json.loads(data)
+                print(f"[UDP server]: Received message: {decoded_msg} from {addr}")
+                self.global_context = decoded_msg
                 # Optionally, send a response back to the client
                 response = "Message received"
-                sock.sendto(response.encode(), addr)
+                sock.sendto(json.dumps(response), addr)
         except KeyboardInterrupt:
             print("\nServer is shutting down.")
         finally:

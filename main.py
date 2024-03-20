@@ -1,7 +1,7 @@
 from gpt import GPT
 from tts import TTS
 
-# from stt import STT
+from stt import STT
 import threading
 from env import Env
 import os
@@ -23,13 +23,13 @@ udp_server = Server()
 
 # gpt thread target
 def gpt_target():
-    gpt.prompt_context = "du er en historielærer"
     while True:
         query_prompt = (
             stt.get_prompt()
         )  # this will wait untiil we have a prompt in sst.Queue
         print("[gpt]: got prompt")
-        prompt_context = gpt.prompt_context
+        gpt.set_prompt_context(udp_server.global_context)
+        prompt_context = gpt.get_prompt_context()
         gpt.stream(prompt_context, query_prompt)
         print("[gpt]: got through stream")
 
