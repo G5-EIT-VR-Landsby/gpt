@@ -24,14 +24,11 @@ udp_server = Server()
 # gpt thread target
 def gpt_target():
     while True:
-        query_prompt = (
-            stt.get_prompt()
-        )  # this will wait untiil we have a prompt in sst.Queue
+        query_prompt = stt.get_prompt()  # this will wait untiil we have a prompt in sst.Queue
         print("[gpt]: got prompt")
         gpt.set_prompt_context(udp_server.global_context)
         prompt_context = gpt.get_prompt_context()
         gpt.stream(prompt_context, query_prompt)
-        print("[gpt]: got through stream")
 
         # Create image from context.
         img_thread = threading.Thread(target=gpt.generate_image, args=(query_prompt,))
@@ -73,6 +70,7 @@ def udp_server_target():
 
 
 if __name__ == "__main__":
+    print("staring program, Press v to record audio, press v agin to stop recording.")
     thread_functions = [stt_target, gpt_target, tts_target, udp_server_target]
 
     threads = []

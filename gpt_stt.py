@@ -27,8 +27,8 @@ class STT:
     def getTextFromAudio(self, audio_file):
         response = self.client.audio.transcriptions.create(
             model="whisper-1",
-            file=audio_file
-            
+            file=audio_file,
+            language="no"
         )
         transcription = response.text
         return transcription

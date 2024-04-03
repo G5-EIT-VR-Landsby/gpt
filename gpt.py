@@ -14,10 +14,6 @@ You are a realisitc image creator, you only make realsitic drawings unless expli
 told otherwise.
 """
 
-#Fagområde_dict = {"1": "Du er en mattelærer", "2": "Du er en geografilærer", "3": "Du er en fysikklærer"}
-#Nivå_dict = {"1": ", på barneskolenivå.", "2": ", på ungdomsskolenivå.", "3": ", på videregåendenivå."}
-#Svarlengde_dict = {"1": "Gi korte svar på maks 50 ord", "2": "Gi medium lange svar på maks 100 ord", "3": "Gi langde svar på maks 200 ord"}
- 
 PROMPT_CONTEXTS = {
     "fagomraade": {"1": "Du er en mattelærer", "2": "Du er en geografilærer", "3": "Du er en fysikklærer"},
     "nivaa": {"1": ", på barneskolenivå.", "2": ", på ungdomsskolenivå.", "3": ", på videregåendenivå."},
@@ -36,7 +32,6 @@ class GPT:
             "svarlengde": "1"
         }
 
-    #  TODO: implement this when this when prompt_context api is finished. Class methode for global accesibility? (udp_server need to reach this)
     def set_prompt_context(self, context):
         print(context)
         if context is None:
@@ -56,7 +51,7 @@ class GPT:
     def get_text(self, role_prompt, text_prompt, stream=False):
         print("[gpt]: prompting.")
         response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": role_prompt},
                 {"role": "user", "content": text_prompt},
