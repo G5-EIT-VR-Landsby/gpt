@@ -25,9 +25,9 @@ udp_server = Server()
 def gpt_target():
     while True:
         query_prompt = stt.get_prompt()  # this will wait untiil we have a prompt in sst.Queue
-        print("[gpt]: got prompt")
-        gpt.set_prompt_context(udp_server.global_context)
+        gpt.set_prompt_context(udp_server.context_list)
         prompt_context = gpt.get_prompt_context()
+        print(f"[gpt]: got prompt, using context: {prompt_context}")
         gpt.stream(prompt_context, query_prompt)
 
         # Create image from context.
@@ -57,12 +57,24 @@ def tts_target():
         filname_index += 1
 
 
+def recoding_listner():
+    while True:
+        stt.set_recodring_flag(udp_server.recoding_flag)
+
 # stt thread target (this is stt client side)
 def stt_target():
-    listener = keyboard.Listener(on_release=stt.on_release)
-    listener.start()
-    stt.start()
-
+    # listener = keyboard.Listener(on_release=stt.on_release)
+    # listener.start()
+    # stt.start()
+    while True:
+        if stt.recording:
+            filename = stt.record_audio()
+            # TODO: fix buffer sending or save as file and then upload.
+            audio_file = open(filename, "rb")
+            text = stt.getTextFromAudio(audio_file)
+            audio_file.close()
+            print("[stt]: got text from gpt: ", text)
+            stt.queue.put(text)
 
 #  Udp server
 def udp_server_target():
@@ -71,7 +83,7 @@ def udp_server_target():
 
 if __name__ == "__main__":
     print("staring program, Press v to record audio, press v agin to stop recording.")
-    thread_functions = [stt_target, gpt_target, tts_target, udp_server_target]
+    thread_functions = [stt_target, gpt_target, tts_target, udp_server_target, recoding_listner]
 
     threads = []
     for func in thread_functions:

@@ -42,6 +42,9 @@ class STT:
         except AttributeError:
             pass
 
+    def set_recodring_flag(self, val):
+        self.recording = val
+
     def record_audio(self):
         # Initialize PyAudio
         audio = pyaudio.PyAudio()
@@ -79,6 +82,9 @@ class STT:
 
     def get_prompt(self):
         return self.queue.get()
+
+    def put_text(self, text):
+        self.queue.put(text)
 
     def start(self):
 

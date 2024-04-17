@@ -32,12 +32,22 @@ class GPT:
             "svarlengde": "1"
         }
 
-    def set_prompt_context(self, context):
-        print(context)
-        if context is None:
+    # [start 1 2 3]
+    def set_prompt_context(self, context_list):
+        # print(context)
+        # if context is None:
+        #     return
+        # if all(key in PROMPT_CONTEXTS for key in context):
+        #     self.prompt_context = context
+        if context_list is None:
             return
-        if all(key in PROMPT_CONTEXTS for key in context):
-            self.prompt_context = context
+        
+        self.prompt_context['fagomraade'] = context_list[0]
+        self.prompt_context['nivaa'] = context_list[1]
+        self.prompt_context['svarlengde'] = context_list[2]
+        print(f"[set_prompt_context] new prompt_context: {self.prompt_context}")
+        return
+
 
     def get_prompt_context(self):
         fagomraade = self.prompt_context["fagomraade"]
