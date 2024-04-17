@@ -15,9 +15,9 @@ told otherwise.
 """
 
 PROMPT_CONTEXTS = {
-    "fagomraade": {"1": "Du er en mattelærer", "2": "Du er en geografilærer", "3": "Du er en fysikklærer"},
-    "nivaa": {"1": ", på barneskolenivå.", "2": ", på ungdomsskolenivå.", "3": ", på videregåendenivå."},
-    "svarlengde": {"1": "Gi korte svar på maks 50 ord", "2": "Gi medium lange svar på maks 100 ord", "3": "Gi langde svar på maks 200 ord"}
+    "fagomraade": {"1": "You are a math teacher", "2": "You are a history teacher", "3": "You are a biology teacher"},
+    "nivaa": {"1": ", in elementary school.", "2": ", in secondary school.", "3": ", in high school."},
+    "svarlengde": {"1": "Give short answers of a maximum of 50 words", "2": "Give medium-long answers of a maximum of 100 words", "3": "Give long answers of a maximum of 200 words"}
 }
 
 class GPT:
