@@ -42,8 +42,12 @@ class TTS:
 
 if __name__ == "__main__":
     tts = TTS(Env.aws_access_key_id, Env.aws_secret_access_key)
-    test_text = "halla, dette er en test."
+    test_text = "Hei og velkommen! Jeg er din læringsassistent, klar til å hjelpe\
+    deg med å utforske en rekke spennende temaer. Uansett om du er interessert\
+    i matte, engelsk, geografi eller noe helt annet,\
+    er jeg her for å veilede deg gjennom læringen. La oss begynne denne reisen sammen!"
     audio_stream = tts.text_to_speach(test_text)
-    tts.play_audio(audio_stream)
+    audio_stream.export("velkommen.mp3", format="mp3")
+    # tts.play_audio(audio_stream)
 
 
